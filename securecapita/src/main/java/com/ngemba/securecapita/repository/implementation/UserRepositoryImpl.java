@@ -8,17 +8,22 @@ import com.ngemba.securecapita.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.UUID;
 
 import static com.ngemba.securecapita.enumeration.RoleType.ROLE_USER;
+import static com.ngemba.securecapita.enumeration.VerificationType.ACCOUNT;
 import static com.ngemba.securecapita.query.UserQuery.*;
+import static java.util.Map.*;
 import static java.util.Objects.requireNonNull;
 
 @Repository
@@ -28,6 +33,7 @@ public class UserRepositoryImpl implements UserRepository<User> {
 
     private final NamedParameterJdbcTemplate jdbc;
     private final RoleRepository<Role> roleRepository;
+    private final BCryptPasswordEncoder encoder;
 
     @Override
     public User create(User user) {
@@ -43,9 +49,15 @@ public class UserRepositoryImpl implements UserRepository<User> {
             // Add role to user
             roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
             // Send verification url
+            String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
             // Save url in verification table
+            jdbc.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, of("userId", user.getId(), "url", verificationUrl));
             // Send email to user with verification url
+            //emailService.sendVerificationUrl(user.getFirstName(), user.getEmail(), verificationUrl, ACCOUNT);
+            user.setEnabled(false);
+            user.setNotLocked(true);
             // Return the newly created user
+            return user;
             // If any errors, throw exception message
         } catch (EmptyResultDataAccessException exception){
 
@@ -76,10 +88,20 @@ public class UserRepositoryImpl implements UserRepository<User> {
     }
 
     private Integer getEmailCount(String email) {
-        return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, Map.of("email", email), Integer.class);
+        return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, of("email", email), Integer.class);
     }
 
     private SqlParameterSource getSqlParameterSource(User user) {
+        return new MapSqlParameterSource()
+                .addValue("firstName", user.getFirstName())
+                .addValue("lastName", user.getLastName())
+                .addValue("email", user.getEmail())
+                .addValue("password", encoder.encode(user.getPassword()));
+    }
+
+    private String getVerificationUrl(String key, String type){
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/user/verify/" + type + "/" + key).toUriString();
     }
 
 }
