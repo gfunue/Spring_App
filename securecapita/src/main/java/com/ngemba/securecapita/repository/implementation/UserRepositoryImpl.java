@@ -59,12 +59,9 @@ public class UserRepositoryImpl implements UserRepository<User> {
             // Return the newly created user
             return user;
             // If any errors, throw exception message
-        } catch (EmptyResultDataAccessException exception){
-
         }catch (Exception exception){
-
+            throw new ApiException("An error occurred. Pleas try again.");
         }
-        return null;
     }
 
     @Override
