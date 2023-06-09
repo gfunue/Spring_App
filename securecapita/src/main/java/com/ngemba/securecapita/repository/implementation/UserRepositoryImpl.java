@@ -1,7 +1,9 @@
 package com.ngemba.securecapita.repository.implementation;
 
+import com.ngemba.securecapita.domain.Role;
 import com.ngemba.securecapita.domain.User;
 import com.ngemba.securecapita.exception.ApiException;
+import com.ngemba.securecapita.repository.RoleRepository;
 import com.ngemba.securecapita.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.Map;
 
+import static com.ngemba.securecapita.enumeration.RoleType.ROLE_USER;
 import static com.ngemba.securecapita.query.UserQuery.*;
 import static java.util.Objects.requireNonNull;
 
@@ -24,6 +27,7 @@ import static java.util.Objects.requireNonNull;
 public class UserRepositoryImpl implements UserRepository<User> {
 
     private final NamedParameterJdbcTemplate jdbc;
+    private final RoleRepository<Role> roleRepository;
 
     @Override
     public User create(User user) {
@@ -36,19 +40,18 @@ public class UserRepositoryImpl implements UserRepository<User> {
             SqlParameterSource parameters = getSqlParameterSource(user);
             jdbc.update(INSERT_USER_QUERY, parameters, holder);
             user.setId(requireNonNull(holder.getKey()).longValue());
+            // Add role to user
             roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
+            // Send verification url
+            // Save url in verification table
+            // Send email to user with verification url
+            // Return the newly created user
+            // If any errors, throw exception message
         } catch (EmptyResultDataAccessException exception){
 
         }catch (Exception exception){
 
         }
-
-        // Add role to user
-        // Send verification url
-        // Save url in verification table
-        // Send email to user with verification url
-        // Return the newly created user
-        // If any errors, throw exception message
         return null;
     }
 
