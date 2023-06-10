@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 
 import static com.ngemba.securecapita.enumeration.RoleType.ROLE_USER;
+import static com.ngemba.securecapita.query.RoleQuery.*;
 import static java.util.Map.*;
 import static java.util.Objects.requireNonNull;
 
@@ -21,8 +22,6 @@ import static java.util.Objects.requireNonNull;
 @Slf4j
 public class RoleRepositoryImpl implements RoleRepository<Role> {
 
-    private static final String SELECT_ROLE_BY_NAME_QUERY = "";
-    private static final String INSERT_ROLE_TO_USER_QUERY = "";
     private final NamedParameterJdbcTemplate jdbc;
     @Override
     public Role create(Role data) {
