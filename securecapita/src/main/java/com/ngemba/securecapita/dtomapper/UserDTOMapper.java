@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserDTOMapper {
-    public UserDTO fromUser(User user){
+    public static UserDTO fromUser(User user){
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(user, userDTO);
         return userDTO;
