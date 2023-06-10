@@ -3,6 +3,7 @@ package com.ngemba.securecapita.repository.implementation;
 import com.ngemba.securecapita.domain.Role;
 import com.ngemba.securecapita.domain.User;
 import com.ngemba.securecapita.exception.ApiException;
+import com.ngemba.securecapita.query.UserQuery;
 import com.ngemba.securecapita.repository.RoleRepository;
 import com.ngemba.securecapita.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,14 +45,14 @@ public class UserRepositoryImpl implements UserRepository<User> {
         try {
             KeyHolder holder = new GeneratedKeyHolder();
             SqlParameterSource parameters = getSqlParameterSource(user);
-            jdbc.update(INSERT_USER_QUERY, parameters, holder);
+            jdbc.update(UserQuery.INSERT_USER_QUERY, parameters, holder);
             user.setId(requireNonNull(holder.getKey()).longValue());
             // Add role to user
             roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
             // Send verification url
             String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
             // Save url in verification table
-            jdbc.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, of("userId", user.getId(), "url", verificationUrl));
+            jdbc.update(UserQuery.INSERT_ACCOUNT_VERIFICATION_URL_QUERY, of("userId", user.getId(), "url", verificationUrl));
             // Send email to user with verification url
             //emailService.sendVerificationUrl(user.getFirstName(), user.getEmail(), verificationUrl, ACCOUNT);
             user.setEnabled(false);
