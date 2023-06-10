@@ -8,14 +8,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 public class SecurecapitaApplication {
-private static final int STRENHT = 12;
+private static final int STRENGTH = 12;
 	public static void main(String[] args) {
 		SpringApplication.run(SecurecapitaApplication.class, args);
 	}
 
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder(){
-		return new BCryptPasswordEncoder(STRENHT);
+		return new BCryptPasswordEncoder(STRENGTH);
 	}
 
 }
