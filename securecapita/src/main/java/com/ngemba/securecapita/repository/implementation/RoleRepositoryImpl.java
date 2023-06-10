@@ -51,12 +51,12 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
     @Override
     public void addRoleToUser(Long userId, String roleName) {
         try{
-            Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, of("roleName", roleName), new RoleRowMapper());
+            Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, of("name", roleName), new RoleRowMapper());
             jdbc.update(INSERT_ROLE_TO_USER_QUERY, of("userId", userId, "roleId", requireNonNull(role).getId()));
         } catch (EmptyResultDataAccessException exception){
             throw new ApiException("No role found by name: " + ROLE_USER.name());
         }catch (Exception exception){
-            throw new ApiException("An error occurred. Pleas try again.");
+            throw new ApiException("An error occurred. Exception from adding role to user.");
         }
 
     }
