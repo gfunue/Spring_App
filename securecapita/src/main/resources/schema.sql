@@ -2,11 +2,18 @@ CREATE SCHEMA IF NOT EXISTS securecapita;
 
 SET NAMES 'UTF8MB4';
 SET TIME_ZONE = 'US/Central';
-SET TIME_ZONE = '-7:00';
+SET TIME_ZONE = '-5:00';
 
 USE securecapita;
 
+DROP TABLE IF EXISTS UserEvents;
+DROP TABLE IF EXISTS UserRoles;
+DROP TABLE IF EXISTS AccountVerifications;
+DROP TABLE IF EXISTS ResetPasswordVerifications;
+DROP TABLE IF EXISTS TwoFactorVerifications;
 DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS Roles;
+DROP TABLE IF EXISTS Events;
 
 CREATE TABLE Users
 (
@@ -24,20 +31,16 @@ CREATE TABLE Users
     using_mfa    BOOLEAN DEFAULT FALSE,
     created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
     image_url    VARCHAR(255) DEFAULT 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-    CONSTRAINT   UN_Users_Email UNIQUE (email)
+    CONSTRAINT   UQ_Users_Email UNIQUE (email)
 );
-
-DROP TABLE IF EXISTS Roles;
 
 CREATE TABLE Roles
 (
     id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name       VARCHAR(50) NOT NULL,
-    permission VARCHAR(50) NOT NULL,
-    CONSTRAINT UN_Roles_Name UNIQUE (name)
+    permission VARCHAR(255) NOT NULL,
+    CONSTRAINT UQ_Roles_Name UNIQUE (name)
 );
-
-DROP TABLE IF EXISTS UserRoles;
 
 CREATE TABLE UserRoles
 (
@@ -46,20 +49,16 @@ CREATE TABLE UserRoles
     role_id BIGINT UNSIGNED NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (role_id) REFERENCES Roles (id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT UN_UserRoles_User_Id UNIQUE (user_id)
+    CONSTRAINT UQ_UserRoles_User_Id UNIQUE (user_id)
 );
-
-DROP TABLE IF EXISTS Events;
 
 CREATE TABLE Events
 (
     id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     type        VARCHAR(50) NOT NULL CHECK(type IN ('LOGIN_ATTEMPT', 'LOGIN_ATTEMPT_FAILURE', 'LOGIN_ATTEMPT_SUCCESS','PROFILE_UPDATE','PROFILE_PICTURE_UPDATE','ROLE_UPDATE','ACCOUNT_SETTING_UPDATE','PASSWORD_UPDATE','MFA_UPDATE')),
     description VARCHAR(255) NOT NULL,
-    CONSTRAINT  UN_Events_Type UNIQUE (type)
+    CONSTRAINT  UQ_Events_Type UNIQUE (type)
 );
-
-DROP TABLE IF EXISTS UserEvents;
 
 CREATE TABLE UserEvents
 (
@@ -73,19 +72,15 @@ CREATE TABLE UserEvents
     FOREIGN KEY (event_id) REFERENCES Events (id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-DROP TABLE IF EXISTS AccountVerifications;
-
 CREATE TABLE AccountVerifications
 (
     id      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
     url     VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT UN_AccountVerifications_User_Id UNIQUE (user_id),
-    CONSTRAINT UN_AccountVerifications_Url UNIQUE (url)
+    CONSTRAINT UQ_AccountVerifications_User_Id UNIQUE (user_id),
+    CONSTRAINT UQ_AccountVerifications_Url UNIQUE (url)
 );
-
-DROP TABLE IF EXISTS ResetPasswordVerifications;
 
 CREATE TABLE ResetPasswordVerifications
 (
@@ -94,11 +89,9 @@ CREATE TABLE ResetPasswordVerifications
     url             VARCHAR(255) NOT NULL,
     expiration_date DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT UN_ResetPasswordVerifications_User_Id UNIQUE (user_id),
-    CONSTRAINT UN_ResetPasswordVerifications_Url UNIQUE (url)
+    CONSTRAINT UQ_ResetPasswordVerifications_User_Id UNIQUE (user_id),
+    CONSTRAINT UQ_ResetPasswordVerifications_Url UNIQUE (url)
 );
-
-DROP TABLE IF EXISTS TwoFactorVerifications;
 
 CREATE TABLE TwoFactorVerifications
 (
@@ -107,6 +100,6 @@ CREATE TABLE TwoFactorVerifications
     code            VARCHAR(10) NOT NULL,
     expiration_date DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT UN_TwoFactorVerifications_User_Id UNIQUE (user_id),
-    CONSTRAINT UN_TwoFactorVerifications_Code UNIQUE (code)
+    CONSTRAINT UQ_TwoFactorVerifications_User_Id UNIQUE (user_id),
+    CONSTRAINT UQ_TwoFactorVerifications_Code UNIQUE (code)
 );
