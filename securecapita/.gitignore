@@ -33,7 +33,8 @@ build/
 .vscode/
 
 ### project ###/src/main/resources/application.properties
-application.properties
+*.properties
+
 
 ### Maven ###
 pom.xml.tag
