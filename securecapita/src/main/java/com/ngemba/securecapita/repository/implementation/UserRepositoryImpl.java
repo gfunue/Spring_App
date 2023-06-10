@@ -7,6 +7,7 @@ import com.ngemba.securecapita.repository.RoleRepository;
 import com.ngemba.securecapita.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -22,7 +23,7 @@ import java.util.UUID;
 import static com.ngemba.securecapita.enumeration.RoleType.ROLE_USER;
 import static com.ngemba.securecapita.enumeration.VerificationType.ACCOUNT;
 import static com.ngemba.securecapita.query.UserQuery.*;
-import static java.util.Map.*;
+import static java.util.Map.of;
 import static java.util.Objects.requireNonNull;
 
 @Repository
@@ -58,9 +59,15 @@ public class UserRepositoryImpl implements UserRepository<User> {
             // Return the newly created user
             return user;
             // If any errors, throw exception message
-        }catch (Exception exception){
-            throw new ApiException("An error occurred. Pleas try again.");
-        }
+    } catch (DataAccessException dae){
+        //log.error(exception.getMessage());
+        //throw new ApiException("An error occurred. Pleas try again.");
+        log.error("A database error occurred", dae);
+        throw new ApiException("A database error occurred: " + dae.getMessage(), dae);
+    } catch (Exception exception){
+        log.error("An unexpected error occurred", exception);
+        throw new ApiException("An unexpected error occurred: " + exception.getMessage(), exception);
+    }
     }
 
     @Override
