@@ -6,7 +6,7 @@ import com.ngemba.securecapita.domain.User;
 import java.util.Collection;
 
 public interface RoleRepository <T extends Role>{
-    //    Basic CRUD Operations
+    //Basic CRUD Operations
     T create(T data);
     Collection<T> List(int page, int pageSize);
     T get(Long id);
